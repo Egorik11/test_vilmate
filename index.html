@@ -22,47 +22,46 @@
 
 <body>
 	<script>
-		let arrayDivs = [];
-		let originalPosition = {};
-
-		for (let i = 0; i < 100; i++) {
-			const div = document.createElement('div');
-			div.innerText = `Div ${i + 1}`;
-			div.classList.add('styleDiv');
-			div.dataset.index = i;
-			div.addEventListener('click', () => {
-				const divId = `DivId ${i}`;
-				const currentIndex = arrayDivs.findIndex(el => el.dataset.index == div.dataset.index);
-
-				if (!originalPosition[divId]) {
-					originalPosition[divId] = i;
-					const elementToMove = arrayDivs.splice(currentIndex, 1)[0];
-					arrayDivs.unshift(elementToMove);
-				} else {
-					const originalIndex = originalPosition[divId];
-					const elementToMove = arrayDivs.splice(currentIndex, 1)[0];
-					arrayDivs.splice(originalIndex, 0, elementToMove);
-					delete originalPosition[divId];
-					for (const key in originalPosition) {
-						if (originalPosition[key] >= originalIndex) {
-							originalPosition[key]++;
-						}
-					}
-				}
-				console.log(arrayDivs.map(el => el.innerText), originalPosition);
-				updateDom();
-			});
-			arrayDivs.push(div);
+		function createDiv() {
+			const arrayDivs = [];
+			for (let i = 0; i < 5; i++) {
+				const div = document.createElement('div');
+				div.innerHTML = `DivId ${i + 1}`;
+				div.classList.add('styleDiv');
+				div.dataset.movedToFront = 'false';
+				div.dataset.originalIndex = i;
+				arrayDivs.push(div);
+			}
+			return arrayDivs;
 		}
 
-		function updateDom() {
+		function render(divs) {
 			document.body.innerHTML = '';
-			arrayDivs.forEach(div => {
-				document.body.appendChild(div);
+			divs.forEach(div => document.body.appendChild(div));
+		}
+
+		function eventDiv(divs) {
+			divs.forEach(div => {
+				div.addEventListener('click', () => {
+					const currentIndex = divs.indexOf(div);
+					const originalIndex = parseInt(div.dataset.originalIndex, 10);
+					if (div.dataset.movedToFront === 'true') {
+						divs.splice(currentIndex, 1);
+						divs.splice(originalIndex, 0, div);
+						div.dataset.movedToFront = 'false';
+					} else {
+						divs.splice(currentIndex, 1);
+						divs.unshift(div);
+						div.dataset.movedToFront = 'true';
+					}
+					render(divs);
+				});
 			});
 		}
 
-		updateDom();
+		const divs = createDiv();
+		render(divs);
+		eventDiv(divs);
 	</script>
 </body>
 
